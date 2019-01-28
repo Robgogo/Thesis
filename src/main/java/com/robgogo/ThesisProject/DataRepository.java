@@ -1,4 +1,6 @@
 package com.robgogo.ThesisProject;
 
-public class DataRepository {
+import org.springframework.data.repository.CrudRepository;
+
+public interface DataRepository extends CrudRepository<Data,Integer> {
 }

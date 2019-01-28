@@ -1,4 +1,6 @@
 package com.robgogo.ThesisProject;
 
-public class SensorRepository {
+import org.springframework.data.repository.CrudRepository;
+
+public interface SensorRepository extends CrudRepository<Sensor,Integer>{
 }
