@@ -1,10 +1,12 @@
 package com.robgogo.ThesisProject;
 
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
@@ -12,12 +14,23 @@ public class Data {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer Id;
+    @NotNull
     private Float level;
+    @NotNull
     private Float flowRate;
+    @NotNull
     private Date timeOfReading;
 
-    public Data(Integer id, Float level, Float flowRate, Date timeOfReading) {
-        Id = id;
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "sensorId",nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private Sensor sensor;
+
+    public Data(){}
+
+
+    public Data( Float level, Float flowRate, Date timeOfReading) {
         this.level = level;
         this.flowRate = flowRate;
         this.timeOfReading = timeOfReading;
@@ -29,6 +42,14 @@ public class Data {
 
     public void setId(Integer id) {
         Id = id;
+    }
+
+    public Sensor getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(Sensor sensor) {
+        this.sensor = sensor;
     }
 
     public Float getLevel() {

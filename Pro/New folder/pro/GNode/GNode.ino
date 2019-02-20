@@ -39,7 +39,6 @@ void setup() {
   pinMode(OnOffLed,OUTPUT);
   pinMode(statusGreen,OUTPUT);
   pinMode(statusRed,OUTPUT);
-  
 
   pulseCount        = 0;
   flowRate          = 0.0;
@@ -128,8 +127,11 @@ void loop() {
   Serial.print(':');
   Serial.print(now.second(), DEC);
   Serial.println();
-  delay(1000);
   if(Serial.available()>0){
+    Serial.println("Reading data...");
+    String nodeData=Serial.readString();
+    delay(200);
+    Serial.println(nodeData);
     switch(Serial.read()){
       case 's':
         digitalWrite(statusGreen,HIGH);
@@ -142,9 +144,11 @@ void loop() {
     }
   }
 
-    if(mySerial.available()){
-      Serial.write(mySerial.read());
-    }
+  if(mySerial.available()){
+    Serial.write(mySerial.read());
+  }
+
+  delay(1000);
 
 }
 

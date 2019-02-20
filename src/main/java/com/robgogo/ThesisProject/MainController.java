@@ -1,27 +1,63 @@
 package com.robgogo.ThesisProject;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
-@Controller
-@RequestMapping(path = "/demo")
+@CrossOrigin(origins="http://localhost:3001")
+@RestController
+@RequestMapping(path = "/api")
 public class MainController {
     @Autowired
-    private UserRepository userRepository;
+    private SensorRepository sensorRepo;
+    @Autowired
+    private DataRepository dataRepo;
 
-    @GetMapping(path = "/add")
-    public @ResponseBody User addNewUser(@RequestParam String name,@RequestParam String email){
-        User n=new User();
-        n.setName(name);
-        n.setEmail(email);
-        userRepository.save(n);
-        return n;
+    @GetMapping(path = "/data")
+    public @ResponseBody Iterable<Data> getAllSensor(){
+        ArrayList lst=new ArrayList();
+
+        dataRepo.findAll().forEach((x)->{
+            JSONObject jo=new JSONObject();
+            Sensor s=sensorRepo.findById(x.getSensor().getId()).get();
+            jo.put("id",x.getId());
+            jo.put("name",s.getName());
+            jo.put("location",s.getLocation());
+            JSONObject data=new JSONObject();
+            data.put("flowRate",x.getFlowRate());
+            data.put("level",x.getLevel());
+            data.put("timeOfReading",x.getTimeOfReading());
+            jo.put("data",data);
+            lst.add(jo.toString());
+        });
+        //return dataRepo.findAll();
+        return lst;
     }
 
-    @GetMapping(path = "/all")
-    public @ResponseBody Iterable<User> getAllUsers(){
-        return userRepository.findAll();
+    @PostMapping("/postdata")
+    public @ResponseBody ResponseEntity<?> addData(@RequestBody HashMap<String,Data> hp){
+
+        ArrayList<Data> s = new ArrayList<Data>();
+
+            hp.forEach((x,y)->{
+                Sensor sensor=sensorRepo.findByName(x);
+                Data data=new Data(hp.get(x).getLevel(),hp.get(x).getFlowRate(),hp.get(x).getTimeOfReading());
+                Date d=new Date();
+                data.setTimeOfReading(d);
+                data.setSensor(sensor);
+                dataRepo.save(data);
+                s.add(data);
+            });
+
+
+        return ResponseEntity.ok(s);
     }
+
 }
