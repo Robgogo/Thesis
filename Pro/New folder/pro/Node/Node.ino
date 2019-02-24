@@ -8,7 +8,8 @@ int  trigPin=13;
 float pingTime;
 float targetDistance;
 float speedOfSound=343;//in meter per second
-
+float originalDist=2;
+float level;
 int sensorInterrupt=0;
 int flowRatePin=2;
 float calibrationFactor=4.5;
@@ -58,6 +59,8 @@ void loop() {
 
   DateTime now=rtc.now();
 
+  String timeOfRecord=String(now.year(), DEC)+'/'+String(now.month(), DEC)+'/'+String(now.day(), DEC)+" "+String(now.hour(), DEC)+":"+String(now.minute(), DEC)+":"+String(now.second(), DEC);
+
 //  Serial.print(now.year(), DEC);
 //  Serial.print('/');
 //  Serial.print(now.month(), DEC);
@@ -84,6 +87,10 @@ void loop() {
 
   targetDistance=speedOfSound * pingTime;
   targetDistance=targetDistance/2.;
+
+  level=originalDist - targetDistance;
+
+  
 
 //  Serial.print("The distance is: ");
 //  Serial.println(targetDistance);
@@ -113,10 +120,10 @@ void loop() {
     attachInterrupt(sensorInterrupt, pulseCounter, FALLING);
   }
 
-  String data="\"A\":{\"flowrate\":"+(String)flowRate+",\"level\":"+(String)targetDistance+"}";
+  String data="\"sensor1\":{\"flowrate\":"+(String)flowRate+",\"level\":"+(String)level+",\"time\":"+timeOfRecord+"}";
   Serial.println(data);
   
-  delay(1000);
+  delay(3800);
 
 }
 

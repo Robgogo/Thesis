@@ -10,8 +10,10 @@ int echoPin=11;
 int  trigPin=13;
 float pingTime;
 float targetDistance;
+float originalDist=2;
+float level;
 float speedOfSound=343;//in meter per second
-
+String data=  "";
 int sensorInterrupt=0;
 int flowRatePin=2;
 float calibrationFactor=4.5;
@@ -81,8 +83,10 @@ void loop() {
   targetDistance=speedOfSound * pingTime;
   targetDistance=targetDistance/2.;
 
-  Serial.print("The distance is: ");
-  Serial.println(targetDistance);
+  level=originalDist - targetDistance;
+
+//  Serial.print("The distance is: ");
+//  Serial.println(level);
 
   
 //  delay(1000);
@@ -94,84 +98,80 @@ void loop() {
     flowMilliLitres = (flowRate / 60) * 1000;
     totalMilliLitres += flowMilliLitres;
     unsigned int frac;
-    Serial.print("Flow rate: ");
-    Serial.print(int(flowRate));  // Print the integer part of the variable
-    Serial.print(".");             // Print the decimal point
+//    Serial.print("Flow rate: ");
+//    Serial.print(int(flowRate));  // Print the integer part of the variable
+//    Serial.print(".");             // Print the decimal point
     frac = (flowRate - int(flowRate)) * 10;
-    Serial.print(frac, DEC) ;      // Print the fractional part of the variable
-    Serial.print("L/min");
-    Serial.print("  Current Liquid Flowing: ");             // Output separator
-    Serial.print(flowMilliLitres);
-    Serial.print("mL/Sec");
-    Serial.print("  Output Liquid Quantity: ");             // Output separator
-    Serial.print(totalMilliLitres);
-    Serial.println("mL"); 
+//    Serial.print(frac, DEC) ;      // Print the fractional part of the variable
+//    Serial.print("L/min");
+//    Serial.print("  Current Liquid Flowing: ");             // Output separator
+//    Serial.print(flowMilliLitres);
+//    Serial.print("mL/Sec");
+//    Serial.print("  Output Liquid Quantity: ");             // Output separator
+//    Serial.print(totalMilliLitres);
+//    Serial.println("mL"); 
     pulseCount = 0;
     attachInterrupt(sensorInterrupt, pulseCounter, FALLING);
   }
 
   
   DateTime now=rtc.now();
-
-  Serial.print(now.year(), DEC);
-  Serial.print('/');
-  Serial.print(now.month(), DEC);
-  Serial.print('/');
-  Serial.print(now.day(), DEC);
-  Serial.print(" (");
-  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-  Serial.print(") ");
-  Serial.print(now.hour(), DEC);
-  Serial.print(':');
-  Serial.print(now.minute(), DEC);
-  Serial.print(':');
-  Serial.print(now.second(), DEC);
-  Serial.println();
+//  Serial.print(now.year(), DEC);
+//  Serial.print('/');
+//  Serial.print(now.month(), DEC);
+//  Serial.print('/');
+//  Serial.print(now.day(), DEC);
+//  Serial.print(" (");
+//  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+//  Serial.print(") ");
+//  Serial.print(now.hour(), DEC);
+//  Serial.print(':');
+//  Serial.print(now.minute(), DEC);
+//  Serial.print(':');
+//  Serial.print(now.second(), DEC);
+//  Serial.println();
+  String timeOfRecord=String(now.year(), DEC)+'/'+String(now.month(), DEC)+'/'+String(now.day(), DEC)+" "+String(now.hour(), DEC)+":"+String(now.minute(), DEC)+":"+String(now.second(), DEC);
+  
+  String gnodeData="\"sensor2\":{\"flowrate\":"+(String)flowRate+",\"level\":"+(String)level+",\"time\":"+timeOfRecord+"}";
   if(Serial.available()>0){
     Serial.println("Reading data...");
     String nodeData=Serial.readString();
-    delay(200);
-    Serial.println(nodeData);
-    switch(Serial.read()){
-      case 's':
-        digitalWrite(statusGreen,HIGH);
-        SendMessage();
-        digitalWrite(statusGreen,LOW);
-        break;
-      case 'r':
-        RecieveMessage();
-        break;
-    }
+    delay(800);
+    //Serial.println(nodeData);
+    data=data+gnodeData+","+nodeData;
+    digitalWrite(statusGreen,HIGH);
+    SendMessage(data);
+    digitalWrite(statusGreen,LOW);
   }
 
   if(mySerial.available()){
     Serial.write(mySerial.read());
   }
 
-  delay(1000);
+  delay(500);
 
 }
 
-void SendMessage(){
+void SendMessage(String data){
   mySerial.println("AT+HTTPINIT");
   mySerial.println((char)13);
-  delay(1000);
+  delay(500);
   mySerial.println("AT+HTTPPARA=\"CID\",1");
-  delay(1000);
+  delay(500);
   mySerial.println("AT+HTTPPARA=\"URL\",\"http://localhost:8080/api/add\"");
-  delay(1000);
+  delay(500);
   mySerial.println("AT+HTTPPARA=\"CONTENT\",\"multipart/form-data; boundary=----WebKitFormBoundaryvZ0ZHShNAcBABWFy\"");
-  delay(1000);
+  delay(500);
   mySerial.println("AT+HTTPDATA=192,10000");
 
   mySerial.println("------WebKitFormBoundaryvZ0ZHShNAcBABWFy");
   mySerial.println("Content-Disposition: form-data; name=\"fileToUpload\"; filename=\"data.json\"");
   mySerial.println("Content-Type: application/json");
-  String data="{\"name\":\"Kiyaa\",\"location\":\"adama\",\"level\":"+(String)targetDistance+",\"flowRate\":"+(String)flowRate+"}";
+  //String data="{\"name\":\"Kiyaa\",\"location\":\"adama\",\"level\":"+(String)targetDistance+",\"flowRate\":"+(String)flowRate+"}";
   mySerial.println(data);
   mySerial.println("------WebKitFormBoundaryvZ0ZHShNAcBABWFy");
   mySerial.println("AT+HTTPACTION=1");
-  delay(1000);
+  delay(500);
 }
 
 void RecieveMessage(){
