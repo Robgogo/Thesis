@@ -60,4 +60,16 @@ public class MainController {
         return ResponseEntity.ok(s);
     }
 
+    @GetMapping(path = "/sensor")
+    public Iterable<Sensor> getSensor(){
+        return sensorRepo.findAll();
+    }
+
+    @PostMapping("/postsensor")
+    public @ResponseBody Sensor postSensor(@RequestBody Sensor sensor){
+        Sensor s=new Sensor(sensor.getName(),sensor.getLocation());
+        sensorRepo.save(s);
+        return s;
+    }
+
 }
