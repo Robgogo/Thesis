@@ -12,16 +12,18 @@ public class Sensor {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer Id;
     private String  name;
-    private String location;
+//    private String location;
+    private Float latitude;
+    private Float longitude;
 
 
     public Sensor() {
     }
 
-    public Sensor(String name, String location) {
+    public Sensor(String name, Float latitude, Float longitude) {
         this.name = name;
-        this.location = location;
-
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public Integer getId() {
@@ -40,13 +42,19 @@ public class Sensor {
         this.name = name;
     }
 
-    public String getLocation() {
-        return location;
+    public Float getLatitude() {
+        return latitude;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLatitude(Float latitude) {
+        this.latitude = latitude;
     }
 
+    public Float getLongitude() {
+        return longitude;
+    }
 
+    public void setLongitude(Float longitude) {
+        this.longitude = longitude;
+    }
 }

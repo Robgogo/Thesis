@@ -29,7 +29,8 @@ public class MainController {
             Sensor s=sensorRepo.findById(x.getSensor().getId()).get();
             jo.put("id",x.getId());
             jo.put("name",s.getName());
-            jo.put("location",s.getLocation());
+            jo.put("latitude",s.getLatitude());
+            jo.put("longitude",s.getLongitude());
             JSONObject data=new JSONObject();
             data.put("flowRate",x.getFlowRate());
             data.put("level",x.getLevel());
@@ -49,8 +50,8 @@ public class MainController {
             hp.forEach((x,y)->{
                 Sensor sensor=sensorRepo.findByName(x);
                 Data data=new Data(hp.get(x).getLevel(),hp.get(x).getFlowRate(),hp.get(x).getTimeOfReading());
-                Date d=new Date();
-                data.setTimeOfReading(d);
+//                Date d=new Date();
+//                data.setTimeOfReading(d);
                 data.setSensor(sensor);
                 dataRepo.save(data);
                 s.add(data);
@@ -66,10 +67,10 @@ public class MainController {
     }
 
     @PostMapping("/postsensor")
-    public @ResponseBody Sensor postSensor(@RequestBody Sensor sensor){
-        Sensor s=new Sensor(sensor.getName(),sensor.getLocation());
+    public @ResponseBody ResponseEntity<Sensor> postSensor(@RequestBody Sensor sensor){
+        Sensor s=new Sensor(sensor.getName(),sensor.getLatitude(),sensor.getLongitude());
         sensorRepo.save(s);
-        return s;
+        return ResponseEntity.ok(s);
     }
 
 }
