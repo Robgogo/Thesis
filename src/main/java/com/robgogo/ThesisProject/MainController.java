@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-@CrossOrigin(origins="http://localhost:3001")
+@CrossOrigin
 @RestController
 @RequestMapping(path = "/api")
 public class MainController {
