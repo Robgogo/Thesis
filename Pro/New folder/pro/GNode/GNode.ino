@@ -1,4 +1,7 @@
 #include <SoftwareSerial.h>
+#include <MyRealTimeClock.h>
+
+MyRealTimeClock myRTC(4,5,6);
 
 SoftwareSerial xbee(8,7);
 SoftwareSerial mySerial(9, 10);
@@ -10,32 +13,28 @@ char incomingByte ; //Variable to store the incoming byte
 char msg[200];    //Message - array from 0 to 2 (3 values - PWM - e.g. 240)
 byte index;     //Index of array
 String testReading="";
-String dummyData="\"Sensor 2\":{\"flowRate\":23,\"level\":1.56,\"timeOfReading\":\"2019-06-07T14:14:56\"}";
+String dummyData="\"Sensor 2\":{\"flowRate\":23,\"level\":1.56,";
 void setup() {
   // put your setup code here, to run once:
   mySerial.begin(115200);
   xbee.begin(9600);
-  Serial.begin(9600); //Baud rate must be the same as is on xBeinte module
+  Serial.begin(9600); //Baud rate must be the same as is on xBee module
   Serial.println("Recieving");
-  
+//  myRTC.setDS1302Time(19, 16, 02, 00 , 3, 07, 2019);
   delay(100);
-
-//  mySerial.println("AT");
-  
 
 }
 
 void loop() {
 
   Serial.println("Waiting");
-  xbee.listen();
-  // put your main code here, to run repeatedly:
+  myRTC.updateTime();
+  String timeOfReading=String(myRTC.year, DEC)+'-'+String(myRTC.month, DEC)+'-'+String(myRTC.dayofmonth, DEC)+"T"+String(myRTC.hours, DEC)+":"+String(myRTC.minutes, DEC)+":"+String(myRTC.seconds, DEC);
+  xbee.listen();//Start listening on the xbee
   while (xbee.available()>0){
-//    Serial.println("xbee available");
     //Read the incoming byte
     incomingByte = xbee.read();
     //Start the message when the '<' symbol is received
-    Serial.print(incomingByte);
     if(incomingByte == '<')
     {
      started = true;
@@ -59,20 +58,20 @@ void loop() {
      }
    }
  }
- 
+ //if the whole message is recieved convert to string and send to server with the GSM
  if(started && ended)
  {
    String value(msg);
-   Serial.println("Recieved");
-    //Only for debugging
+   Serial.println("Recieved");//Only for debugging
    index = 0;
    msg[index] = '\0';
    started = false;
    ended = false;
-   testReading="{"+value+",\"timeOfReading\":\"2019-06-07T14:14:56\"},"+dummyData+"}";
-   Serial.print(testReading);
+   testReading="{"+value+"\"timeOfReading\":\""+timeOfReading+"\"},"+dummyData+"\"timeOfReading\":\""+timeOfReading+"\"}}";
+   Serial.print(testReading);//only for debuging
    Serial.println();
-   mySerial.listen();
+   mySerial.listen();//start listening to the gsm
+   //call on the methods to connect to internet and post the data
    connectGPRS();
    connectHTTP();
    
@@ -80,15 +79,17 @@ void loop() {
  if(mySerial.available()>0){
   Serial.write(mySerial.read());
  }
-delay(15000);
+ //wait every 5 seconds to listen to transmission
+ delay(5000);
 
 }
 
+//method to display the response of the software serial
 void ShowSerialData() {
   while(mySerial.available()!=0)
     Serial.write(mySerial.read());
 }
-
+//method to connect to GPRS
 void connectGPRS()
 { 
   mySerial.println("AT+CGATT=1");
@@ -110,7 +111,7 @@ void connectGPRS()
   delay(100);
   ShowSerialData();
 }
-
+//method to send the data to the server
 void connectHTTP()
 {
   mySerial.println("AT+HTTPTERM");
@@ -127,7 +128,8 @@ void connectHTTP()
 
   mySerial.println("AT+HTTPPARA=\"URL\",\"http://vast-eyrie-51209.herokuapp.com/api/postdata\"");//Public server address
   delay(100);
-  ShowSerialData();
+  ShowSerialData();myRTC.updateTime();
+  String timeOfReading=String(myRTC.year, DEC)+'-'+String(myRTC.month, DEC)+'-'+String(myRTC.dayofmonth, DEC)+"T"+String(myRTC.hours, DEC)+":"+String(myRTC.minutes, DEC)+":"+String(myRTC.seconds, DEC);
 
   mySerial.println("AT+HTTPPARA=\"CONTENT\",\"application/json\"");
   delay(100);

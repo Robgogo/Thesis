@@ -1,0 +1,41 @@
+//@import 'reset';
+@import url('https://fonts.googleapis.com/css?family=Nunito:300,400,700');
+//@import '~bootstrap/scss/bootstrap.scss';
+@import '../../../node_modules/bootstrap/scss/bootstrap';
+// chartist
+@import "../../../node_modules/chartist/dist/scss/chartist.scss";
+@import "../../../node_modules/chartist-plugin-tooltips/dist/chartist-plugin-tooltip";
+
+// jVectorMap
+@import "../../../node_modules/jvectormap/jquery-jvectormap";
+
+//Datatables 
+
+@import "../../../node_modules/datatables.net-bs4/css/dataTables.bootstrap4";
+@import "../../../node_modules/datatables.net-responsive-bs4/css/responsive.bootstrap4";
+
+@import 'variables';
+
+@import 'button';
+
+@import 'default';
+
+@media only screen and (min-width:576px) {
+    @import '576';
+}
+
+@media only screen and (min-width:768px) {
+    @import '768';
+}
+
+@media only screen and (min-width:992px) {
+    @import '992';
+}
+
+@media only screen and (min-width:1200px) {
+    @import '1200';
+}
+
+@media only screen and (max-width:992px) {
+    @import 'nav_open';
+}
